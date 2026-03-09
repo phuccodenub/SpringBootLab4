@@ -1,11 +1,80 @@
 body {
     background-color: #f5f7fb;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.product-image {
-    width: 70px;
-    height: 70px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid #d9dce2;
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-navbar {
+    background: linear-gradient(90deg, #0d6efd, #6610f2);
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.25);
+}
+
+.app-navbar .navbar-brand {
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+.app-navbar .nav-link.active {
+    font-weight: 600;
+}
+
+.app-main {
+    flex: 1;
+    padding-top: 1.75rem;
+    padding-bottom: 1.75rem;
+}
+
+.app-card {
+    border-radius: 18px;
+    border: 1px solid #dfe3f0;
+    box-shadow: 0 22px 40px rgba(15, 23, 42, 0.08);
+    background: radial-gradient(circle at top left, #f9fbff, #ffffff);
+}
+
+.page-title {
+    font-weight: 700;
+    letter-spacing: .03em;
+}
+
+.table-products thead {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.table-products tbody tr:hover {
+    background-color: #f3f6ff;
+}
+
+.badge-category {
+    border-radius: 999px;
+    padding: .25rem .7rem;
+    font-size: .72rem;
+    font-weight: 600;
+    background: rgba(13, 110, 253, 0.08);
+    color: #0d6efd;
+}
+
+.price-cell {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.form-card {
+    max-width: 520px;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: .85rem;
+}
+
+.btn-pill {
+    border-radius: 999px;
+    padding-inline: 1.3rem;
 }
