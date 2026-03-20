@@ -13,8 +13,7 @@
         <div class="container">
             <a class="navbar-brand" th:href="@{/products}">Product Manager</a>
             <div class="ms-auto d-flex gap-2">
-                <span class="badge bg-info-subtle text-dark border-0"
-                      th:text="${#httpServletRequest.remoteUser != null ? #httpServletRequest.remoteUser : 'Ẩn danh'}"></span>
+                <span class="badge bg-info-subtle text-dark border-0">Da dang nhap</span>
                 <span class="badge bg-light text-dark border-0">JPA · MySQL · Thymeleaf</span>
                 <form th:action="@{/logout}" method="post" class="mb-0">
                     <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
