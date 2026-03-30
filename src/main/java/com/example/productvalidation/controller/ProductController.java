@@ -4,6 +4,10 @@ import com.example.productvalidation.model.Category;
 import com.example.productvalidation.model.Product;
 import com.example.productvalidation.service.CategoryService;
 import com.example.productvalidation.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/products")
@@ -24,8 +29,25 @@ public class ProductController {
     }
 
     @GetMapping
-    public String listProducts(Model model) {
-        model.addAttribute("products", productService.getAllProducts());
+    public String listProducts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String sort,
+            Model model) {
+
+        Sort sorting = buildSort(sort);
+        Pageable pageable = PageRequest.of(page, 5, sorting);
+        Page<Product> productPage = productService.searchProducts(keyword, categoryId, pageable);
+
+        model.addAttribute("products", productPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", productPage.getTotalPages());
+        model.addAttribute("totalItems", productPage.getTotalElements());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("sort", sort);
+        model.addAttribute("categories", categoryService.getAllCategories());
         return "product/list";
     }
 
@@ -63,9 +85,22 @@ public class ProductController {
         return "product/add";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteProduct(@PathVariable("id") long id) {
         productService.deleteProduct(id);
         return "redirect:/products";
+    }
+
+    private Sort buildSort(String sort) {
+        if (sort == null || sort.isEmpty()) {
+            return Sort.by("id").ascending();
+        }
+        return switch (sort) {
+            case "price_asc" -> Sort.by("price").ascending();
+            case "price_desc" -> Sort.by("price").descending();
+            case "name_asc" -> Sort.by("name").ascending();
+            case "name_desc" -> Sort.by("name").descending();
+            default -> Sort.by("id").ascending();
+        };
     }
 }

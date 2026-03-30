@@ -2,9 +2,11 @@ package com.example.productvalidation.config;
 
 import com.example.productvalidation.model.Account;
 import com.example.productvalidation.model.Category;
+import com.example.productvalidation.model.Product;
 import com.example.productvalidation.model.Role;
 import com.example.productvalidation.repository.AccountRepository;
 import com.example.productvalidation.repository.CategoryRepository;
+import com.example.productvalidation.repository.ProductRepository;
 import com.example.productvalidation.repository.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Configuration
 public class DataInitializer {
@@ -20,6 +23,7 @@ public class DataInitializer {
     public CommandLineRunner initData(CategoryRepository categoryRepository,
                                       RoleRepository roleRepository,
                                       AccountRepository accountRepository,
+                                      ProductRepository productRepository,
                                       PasswordEncoder passwordEncoder) {
         return args -> {
             System.out.println("===== Starting Data Initialization =====");
@@ -38,6 +42,41 @@ public class DataInitializer {
                     }
                 } catch (Exception e) {
                     System.out.println("⚠ Skipping categories: " + e.getClass().getSimpleName());
+                }
+
+                try {
+                    if (productRepository.count() < 6) {
+                        System.out.println("Seeding sample products for lab demo (pagination)...");
+                        Category phone = categoryRepository.findByName("Điện thoại").orElse(null);
+                        Category laptop = categoryRepository.findByName("Laptop").orElse(null);
+                        if (phone != null && laptop != null) {
+                            Set<String> existing = productRepository.findAll().stream()
+                                    .map(Product::getName)
+                                    .collect(Collectors.toSet());
+                            Object[][] rows = {
+                                    {"iPhone 15", 22_990_000d, phone},
+                                    {"Samsung Galaxy S24", 18_500_000d, phone},
+                                    {"Xiaomi 14", 12_900_000d, phone},
+                                    {"MacBook Air M3", 28_990_000d, laptop},
+                                    {"Dell XPS 15", 35_000_000d, laptop},
+                                    {"ASUS Zenbook", 19_490_000d, laptop},
+                            };
+                            for (Object[] row : rows) {
+                                String name = (String) row[0];
+                                if (!existing.contains(name)) {
+                                    Product p = new Product();
+                                    p.setName(name);
+                                    p.setPrice((Double) row[1]);
+                                    p.setCategory((Category) row[2]);
+                                    productRepository.save(p);
+                                    existing.add(name);
+                                }
+                            }
+                            System.out.println("✓ Sample products ready");
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("⚠ Skipping product seed: " + e.getClass().getSimpleName());
                 }
 
                 // Initialize Roles and Accounts  

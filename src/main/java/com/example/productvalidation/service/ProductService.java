@@ -2,6 +2,8 @@ package com.example.productvalidation.service;
 
 import com.example.productvalidation.model.Product;
 import com.example.productvalidation.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +18,21 @@ public class ProductService {
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    public Page<Product> searchProducts(String keyword, Integer categoryId, Pageable pageable) {
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasCategory = categoryId != null;
+
+        if (hasKeyword && hasCategory) {
+            return productRepository.findByNameContainingIgnoreCaseAndCategoryId(keyword.trim(), categoryId, pageable);
+        } else if (hasKeyword) {
+            return productRepository.findByNameContainingIgnoreCase(keyword.trim(), pageable);
+        } else if (hasCategory) {
+            return productRepository.findByCategoryId(categoryId, pageable);
+        } else {
+            return productRepository.findAll(pageable);
+        }
     }
 
     public Product getProductById(long id) {

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - Product Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="navbar navbar-expand-lg navbar-dark app-navbar">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/products}">🛒 Product Manager</a>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <a th:href="@{/cart}" class="btn btn-sm btn-light position-relative">
+                    🛒 Giỏ hàng
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          th:if="${cartItemCount != null && cartItemCount > 0}" th:text="${cartItemCount}"></span>
+                </a>
+                <a th:href="@{/orders}" class="btn btn-sm btn-outline-light">📋 Đơn hàng</a>
+                <span class="badge bg-light text-dark border-0" sec:authentication="name"></span>
+                <form th:action="@{/logout}" method="post" class="mb-0">
+                    <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <main class="app-main">
+        <div class="container">
+            <!-- Flash messages -->
+            <div class="alert alert-success alert-dismissible fade show" role="alert"
+                 th:if="${success}" th:text="${success}">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert"
+                 th:if="${error}" th:text="${error}">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="app-card p-4 p-md-5">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h2 class="page-title mb-0">🛒 Giỏ hàng</h2>
+                                <p class="text-muted small mb-0"
+                                   th:text="${#lists.isEmpty(cartItems)} ? 'Giỏ hàng trống' : 'Bạn có ' + ${cartItemCount} + ' sản phẩm trong giỏ hàng'"></p>
+                            </div>
+                            <a class="btn btn-outline-primary" th:href="@{/products}">← Tiếp tục mua sắm</a>
+                        </div>
+
+                        <!-- Empty cart -->
+                        <div th:if="${#lists.isEmpty(cartItems)}" class="text-center py-5">
+                            <p class="text-muted fs-1">🛒</p>
+                            <p class="text-muted">Giỏ hàng của bạn đang trống.</p>
+                            <a th:href="@{/products}" class="btn btn-primary">Mua sắm ngay</a>
+                        </div>
+
+                        <!-- Cart items -->
+                        <div th:if="${!#lists.isEmpty(cartItems)}">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Danh mục</th>
+                                        <th class="text-end">Giá</th>
+                                        <th class="text-center">Số lượng</th>
+                                        <th class="text-end">Thành tiền</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="item : ${cartItems}">
+                                        <td>
+                                            <strong th:text="${item.productName}"></strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge-category" th:text="${item.categoryName ?: 'N/A'}"></span>
+                                        </td>
+                                        <td class="text-end price-cell"
+                                            th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></td>
+                                        <td class="text-center">
+                                            <form th:action="@{/cart/update}" method="post"
+                                                  class="d-inline-flex align-items-center gap-1">
+                                                <input type="hidden" name="productId" th:value="${item.productId}">
+                                                <input type="number" name="quantity" th:value="${item.quantity}"
+                                                       min="1" max="99" class="form-control form-control-sm"
+                                                       style="width: 65px;">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                        title="Cập nhật">✓</button>
+                                            </form>
+                                        </td>
+                                        <td class="text-end price-cell fw-bold"
+                                            th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></td>
+                                        <td class="text-center">
+                                            <form th:action="@{/cart/remove}" method="post" class="d-inline">
+                                                <input type="hidden" name="productId" th:value="${item.productId}">
+                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Xóa sản phẩm này khỏi giỏ hàng?');"
+                                                        title="Xóa">✕</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                    <tfoot>
+                                    <tr class="table-warning">
+                                        <td colspan="4" class="text-end fw-bold fs-5">TỔNG CỘNG:</td>
+                                        <td class="text-end fw-bold fs-5 text-danger"
+                                            th:text="${#numbers.formatDecimal(cartTotal, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></td>
+                                        <td></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <form th:action="@{/cart/clear}" method="post">
+                                    <button type="submit" class="btn btn-outline-danger"
+                                            onclick="return confirm('Xóa toàn bộ giỏ hàng?');">🗑 Xóa toàn bộ</button>
+                                </form>
+                                <form th:action="@{/orders/checkout}" method="post">
+                                    <button type="submit" class="btn btn-primary btn-lg btn-pill"
+                                            onclick="return confirm('Xác nhận đặt hàng?');">
+                                        💳 Đặt hàng
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
